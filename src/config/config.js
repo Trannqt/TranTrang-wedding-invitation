@@ -3,7 +3,7 @@ const config = {
   data: {
     title: "Truong Tran & Minh Trang", // Nanti ini otomatis
     description:
-      "Kami akan menikah dan mengundang Anda untuk turut merayakan momen istimewa ini.", // Nanti ini dibikin random
+      "Tran Yeu Trang.", // Nanti ini dibikin random
     groomName: "Fulan",
     brideName: "Fulana",
     parentGroom: "Bapak Groom & Ibu Groom",
