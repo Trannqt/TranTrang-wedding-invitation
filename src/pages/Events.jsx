@@ -50,7 +50,7 @@ export default function Events() {
                             transition={{ delay: 0.4 }}
                             className="text-gray-500 max-w-md mx-auto"
                         >
-                            Kami Mengundang Anda untuk Merayakan Hari Istimewa Sebagai Awal Perjalanan Cinta Kami
+                            Tran Yeu Trang
                         </motion.p>
 
                         {/* Decorative Line */}
