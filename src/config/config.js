@@ -1,7 +1,7 @@
 // Nanti convert ke Bahasa Indonesia
 const config = {
   data: {
-    title: "Pernikahan Fulan & Fulana", // Nanti ini otomatis
+    title: "Truong Tran & Minh Trang", // Nanti ini otomatis
     description:
       "Kami akan menikah dan mengundang Anda untuk turut merayakan momen istimewa ini.", // Nanti ini dibikin random
     groomName: "Fulan",
