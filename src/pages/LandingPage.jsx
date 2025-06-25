@@ -8,7 +8,7 @@ import Sparkle from "@/components/Sparkle";
 import Heart from "@/components/Heart";
 
 const LandingPage = ({ onOpenInvitation }) => {
-  const { colors, fonts, sparkleEffect, heartEffect } = config.ui.landing;
+  const { colorsHomePage: colors, fonts, sparkleEffect, heartEffect } = config.ui.landing;
 
   // Function to create character-by-character animation
   const characterVariants = {

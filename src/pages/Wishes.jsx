@@ -8,7 +8,6 @@ import {
   User,
   MessageCircle,
   Send,
-  Smile,
   CheckCircle,
   XCircle,
   HelpCircle,
