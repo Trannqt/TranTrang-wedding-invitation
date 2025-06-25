@@ -1,0 +1,32 @@
+/* src/components/Heart.module.css */
+.heart {
+  position: absolute;
+  /* Bỏ border: 10px solid red; */
+  transform: rotate(-45deg); /* Giữ lại việc xoay hình dạng */
+  /*
+    width, height, background-color sẽ được truyền từ inline style
+    trong component Heart.jsx. Điều này là OK.
+  */
+}
+
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  background-color: inherit; /* Kế thừa màu từ parent */
+  border-radius: 50%; /* Tạo hình tròn */
+
+  /* Đặt kích thước của pseudo-elements bằng với parent .heart */
+  width: 100%;  /* Nửa hình tròn có cùng chiều rộng với hình vuông gốc */
+  height: 100%; /* Nửa hình tròn có cùng chiều cao với hình vuông gốc */
+}
+
+.heart::before {
+  top: -50%; /* Đặt nửa trên bên trái */
+  left: 0;
+}
+
+.heart::after {
+  top: 0; /* Đặt nửa trên bên phải */
+  left: 50%;
+}

@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Music, PauseCircle, PlayCircle } from 'lucide-react';
@@ -25,7 +27,7 @@ const Layout = ({ children }) => {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
       } catch (error) {
-        console.log('Autoplay failed, waiting for user interaction');
+        console.log('Autoplay failed, waiting for user interaction', error);
         // Add click event listener for first interaction
         const handleFirstInteraction = async () => {
           try {

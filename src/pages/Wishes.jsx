@@ -1,315 +1,527 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import Confetti from 'react-confetti';
+import { motion, AnimatePresence } from "framer-motion";
+import Confetti from "react-confetti";
 import Marquee from "@/components/ui/marquee";
 import {
-    Calendar,
-    Clock,
-    ChevronDown,
-    User,
-    MessageCircle,
-    Send,
-    Smile,
-    CheckCircle,
-    XCircle,
-    HelpCircle,
-} from 'lucide-react'
-import { useState } from 'react';
-import { formatEventDate } from '@/lib/formatEventDate';
+  Calendar,
+  Clock,
+  ChevronDown,
+  User,
+  MessageCircle,
+  Send,
+  Smile,
+  CheckCircle,
+  XCircle,
+  HelpCircle,
+} from "lucide-react";
+import { useState } from "react";
+import { formatEventDate } from "@/lib/formatEventDate";
+import config from "@/config/config.js";
+
+// CẤU HÌNH GOOGLE FORM CỦA BẠN
+// RẤT QUAN TRỌNG: THAY THẾ CÁC GIÁ TRỊ NÀY BẰNG CỦA RIÊNG BẠN!
+// Để an toàn, bạn nên sử dụng biến môi trường (ví dụ: process.env.NEXT_PUBLIC_GOOGLE_FORM_ACTION_URL)
+// Nếu bạn đang dùng Create React App, hãy đặt biến môi trường bắt đầu bằng REACT_APP_
+// Nếu bạn đang dùng Next.js, hãy đặt biến môi trường bắt đầu bằng NEXT_PUBLIC_
+const GOOGLE_FORM_ACTION_URL =
+  "https://docs.google.com/forms/u/0/d/e/1FAIpQLSffjOLiADBSPNExIUTNS-5FAmpKfMlzKKm5SBErWcqhJQEKlw/formResponse"; // Thay YOUR_FORM_ID
+const ENTRY_ID_NAME = "entry.702848905"; // Thay bằng entry ID của trường "Tên của bạn"
+const ENTRY_ID_MESSAGE = "entry.261536065"; // Thay bằng entry ID của trường "Lời chúc"
+const ENTRY_ID_ATTENDING = "entry.827242592"; // Thay bằng entry ID của trường "Bạn có thể tham dự?"
 
 export default function Wishes() {
-    const [showConfetti, setShowConfetti] = useState(false);
-    const [newWish, setNewWish] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [attendance, setAttendance] = useState('');
-    const [isOpen, setIsOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [name, setName] = useState("");
+  const [newWish, setNewWish] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAttendance, setSelectedAttendance] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedEmoji, setSelectedEmoji] = useState("");
 
-    const options = [
-        { value: 'ATTENDING', label: 'Ya, saya akan hadir' },
-        { value: 'NOT_ATTENDING', label: 'Tidak, saya tidak bisa hadir' },
-        { value: 'MAYBE', label: 'Mungkin, saya akan konfirmasi nanti' }
-    ];
-    // Example wishes - replace with your actual data
-    const [wishes, setWishes] = useState([
-        {
-            id: 1,
-            name: "John Doe",
-            message: "Wishing you both a lifetime of love, laughter, and happiness! 🎉",
-            timestamp: "2024-12-24T23:20:00Z",
-            attending: "attending"
-        },
-        {
-            id: 2,
-            name: "Natalie",
-            message: "Wishing you both a lifetime of love, laughter, and happiness! 🎉",
-            timestamp: "2024-12-24T23:20:00Z",
-            attending: "attending"
-        },
-        {
-            id: 3,
-            name: "Abdur Rofi",
-            message: "Congratulations on your special day! May Allah bless your union! 🤲",
-            timestamp: "2024-12-25T23:08:09Z",
-            attending: "maybe"
-        }
-    ]);
+  const options = config.ui.wishes.attendanceOptions;
 
-    const handleSubmitWish = async (e) => {
-        e.preventDefault();
-        if (!newWish.trim()) return;
+  // DỮ LIỆU LỜI CHÚC CỨNG - KHÔNG LOAD TỪ DATABASE, CHỈ DÙNG ĐỂ HIỂN THỊ MẪU
+  const [wishes, setWishes] = useState([
+    {
+      id: 1,
+      name: "John Doe",
+      message:
+        "Wishing you both a lifetime of love, laughter, and happiness! 🎉",
+      timestamp: "2024-12-24T23:20:00Z",
+      attending: "attending",
+    },
+    {
+      id: 2,
+      name: "Natalie",
+      message:
+        "Wishing you both a lifetime of love, laughter, and happiness! 🎉",
+      timestamp: "2024-12-24T23:20:00Z",
+      attending: "attending",
+    },
+    {
+      id: 3,
+      name: "Abdur Rofi",
+      message:
+        "Congratulations on your special day! May Allah bless your union! 🤲",
+      timestamp: "2024-12-25T23:08:09Z",
+      attending: "maybe",
+    },
+  ]);
 
-        setIsSubmitting(true);
-        // Simulating API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+  const handleSubmitWish = async (e) => {
+    e.preventDefault();
 
-        const newWishObj = {
-            id: wishes.length + 1,
-            name: "Guest", // Replace with actual user name
-            message: newWish,
-            attend: "attending",
-            timestamp: new Date().toISOString()
-        };
+    if (!name.trim() || !newWish.trim() || !selectedAttendance) {
+      alert("Vui lòng điền đầy đủ tên, lời chúc và trạng thái tham dự.");
+      return;
+    }
 
-        setWishes(prev => [newWishObj, ...prev]);
-        setNewWish('');
-        setIsSubmitting(false);
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
-    };
-    const getAttendanceIcon = (status) => {
-        switch (status) {
-            case 'attending':
-                return <CheckCircle className="w-4 h-4 text-emerald-500" />;
-            case 'not-attending':
-                return <XCircle className="w-4 h-4 text-rose-500" />;
-            case 'maybe':
-                return <HelpCircle className="w-4 h-4 text-amber-500" />;
-            default:
-                return null;
-        }
-    };
-    return (<>
-        <section id="wishes" className="min-h-screen relative overflow-hidden">
-            {showConfetti && <Confetti recycle={false} numberOfPieces={200} />}
-            <div className="container mx-auto px-4 py-20 relative z-10">
-                {/* Section Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center space-y-4 mb-16"
+    setIsSubmitting(true);
+
+    try {
+      // Chuẩn bị dữ liệu để gửi tới Google Form
+      const formData = new FormData();
+      formData.append(ENTRY_ID_NAME, name.trim());
+      formData.append(
+        ENTRY_ID_MESSAGE,
+        newWish.trim() + (selectedEmoji ? ` ${selectedEmoji}` : "")
+      );
+      // Lấy label từ options để gửi đúng giá trị mà Google Form hiển thị cho dropdown/multiple choice
+      const attendanceLabel =
+        options.find((opt) => opt.value === selectedAttendance)?.label ||
+        selectedAttendance;
+      formData.append(ENTRY_ID_ATTENDING, attendanceLabel);
+      // Gửi emoji và timestamp nếu bạn có các trường này trong Google Form
+
+      // Gửi dữ liệu tới Google Form
+      const response = await fetch(GOOGLE_FORM_ACTION_URL, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors", // Rất quan trọng khi gửi đến Google Form từ frontend
+      });
+
+      // Google Form sẽ trả về phản hồi opaque (không truy cập được nội dung) với mode: 'no-cors'
+      // Nên chúng ta chỉ kiểm tra xem fetch có thành công hay không
+      // Nếu không có lỗi, coi như thành công
+      console.log(
+        "Phản hồi từ Google Form (không truy cập nội dung với no-cors):",
+        response
+      );
+
+      // Cập nhật UI cục bộ để hiển thị lời chúc vừa gửi
+      const newWishObj = {
+        id: Date.now(), // Sử dụng timestamp làm ID duy nhất
+        name: name.trim(),
+        message: newWish.trim() + (selectedEmoji ? ` ${selectedEmoji}` : ""),
+        attending: selectedAttendance,
+        timestamp: new Date().toISOString(),
+      };
+      setWishes((prev) => [newWishObj, ...prev]);
+
+      // Reset form
+      setNewWish("");
+      setName("");
+      setSelectedAttendance("");
+      setSelectedEmoji("");
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+      alert("Lời chúc của bạn đã được gửi thành công!"); // Thông báo thành công
+    } catch (error) {
+      console.error("Lỗi khi gửi lời chúc:", error);
+      alert("Đã xảy ra lỗi khi gửi lời chúc. Vui lòng thử lại."); // Thông báo lỗi
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getAttendanceIcon = (status) => {
+    switch (status) {
+      case "attending":
+        return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+      case "not-attending":
+        return <XCircle className="w-4 h-4 text-rose-500" />;
+      case "maybe":
+        return <HelpCircle className="w-4 h-4 text-amber-500" />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      <section
+        id="wishes"
+        className="min-h-screen relative overflow-hidden"
+        style={{
+          backgroundColor: config.ui.landing.colors.background,
+          color: config.ui.landing.colors.textColor,
+          fontFamily: config.ui.landing.fonts.body,
+        }}
+      >
+        {showConfetti && <Confetti recycle={false} numberOfPieces={200} />}
+        <div className="container mx-auto px-4 py-20 relative z-1">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ duration: 0.8 }}
+            className="text-center space-y-4 mb-16"
+          >
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-block font-medium"
+              style={{ color: config.ui.landing.colors.highlightColor }}
+            >
+              {config.ui.wishes.subtitle}
+            </motion.span>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ delay: 0.3 }}
+              className="text-4xl md:text-5xl font-serif leading-tight"
+              style={{
+                color: config.ui.landing.colors.textColor,
+                fontFamily: config.ui.landing.fonts.heading,
+              }}
+            >
+              {config.ui.wishes.title}
+            </motion.h2>
+
+            {/* Decorative Divider */}
+            <motion.div
+              initial={{ scale: 0 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ delay: 0.4 }}
+              className="flex items-center justify-center gap-4 pt-4"
+            >
+              <div
+                className="h-[1px] w-12"
+                style={{ backgroundColor: config.ui.landing.colors.cardBorder }}
+              />
+              <MessageCircle
+                className="w-5 h-5"
+                style={{ color: config.ui.landing.colors.iconColor }}
+              />
+              <div
+                className="h-[1px] w-12"
+                style={{ backgroundColor: config.ui.landing.colors.cardBorder }}
+              />
+            </motion.div>
+          </motion.div>
+
+          {/* Wishes List (Marquee) - Hiển thị dữ liệu cứng */}
+          <div className="max-w-2xl mx-auto space-y-6">
+            <AnimatePresence>
+              {/* Chỉ hiển thị marquee nếu có lời chúc */}
+              {wishes.length > 0 && (
+                <Marquee
+                  speed={20}
+                  gradient={false}
+                  className="[--duration:20s] py-2"
                 >
-                    <motion.span
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="inline-block text-rose-500 font-medium"
-                    >
-                        Kirimkan Doa dan Harapan Terbaik Anda
-                    </motion.span>
-
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-4xl md:text-5xl font-serif text-gray-800"
-                    >
-                        Pesan dan Doa
-                    </motion.h2>
-
-                    {/* Decorative Divider */}
+                  {wishes.map((wish, index) => (
                     <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.4 }}
-                        className="flex items-center justify-center gap-4 pt-4"
+                      key={wish.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="group relative w-[280px] flex-shrink-0 mx-2"
                     >
-                        <div className="h-[1px] w-12 bg-rose-200" />
-                        <MessageCircle className="w-5 h-5 text-rose-400" />
-                        <div className="h-[1px] w-12 bg-rose-200" />
+                      {/* Background gradient */}
+                      <div
+                        className="absolute inset-0 rounded-xl transform transition-transform group-hover:scale-[1.02] duration-300"
+                        style={{
+                          background: `linear-gradient(to right, ${config.ui.landing.colors.highlightColor}20, ${config.ui.landing.colors.highlightColor}20)`,
+                        }}
+                      />
+
+                      {/* Card content */}
+                      <div
+                        className="relative backdrop-blur-sm p-4 rounded-xl shadow-md"
+                        style={{
+                          backgroundColor: `${config.ui.landing.colors.cardBackground}D9`,
+                          border: `1px solid ${config.ui.landing.colors.cardBorder}`,
+                        }}
+                      >
+                        {/* Header */}
+                        <div className="flex items-start space-x-3 mb-2">
+                          {/* Avatar */}
+                          <div className="flex-shrink-0">
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                              style={{
+                                background: `linear-gradient(to right bottom, ${config.ui.landing.colors.highlightColor}, ${config.ui.landing.colors.highlightColor}BB)`,
+                              }}
+                            >
+                              {wish.name[0]?.toUpperCase() || "G"}
+                            </div>
+                          </div>
+
+                          {/* Name, Time, and Attendance */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2">
+                              <h4
+                                className="font-medium text-sm truncate"
+                                style={{
+                                  color: config.ui.landing.colors.textColor,
+                                }}
+                              >
+                                {wish.name}
+                              </h4>
+                              {getAttendanceIcon(wish.attending)}
+                            </div>
+                            <div
+                              className="flex items-center space-x-1 text-xs"
+                              style={{
+                                color: config.ui.landing.colors.textColor,
+                                opacity: 0.7,
+                              }}
+                            >
+                              <Clock className="w-3 h-3" />
+                              <time className="truncate">
+                                {formatEventDate(wish.timestamp)}
+                              </time>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Message */}
+                        <p
+                          className="text-sm leading-relaxed mb-2 line-clamp-3"
+                          style={{
+                            color: config.ui.landing.colors.textColor,
+                            opacity: 0.9,
+                          }}
+                        >
+                          {wish.message}
+                        </p>
+
+                        {/* Optional: Time indicator for recent messages */}
+                        {Date.now() - new Date(wish.timestamp).getTime() <
+                          3600000 && (
+                          <div className="absolute top-2 right-2">
+                            <span
+                              className="px-2 py-1 rounded-full text-xs font-medium"
+                              style={{
+                                backgroundColor: `${config.ui.landing.colors.highlightColor}20`,
+                                color: config.ui.landing.colors.highlightColor,
+                              }}
+                            >
+                              New
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </motion.div>
-                </motion.div>
+                  ))}
+                </Marquee>
+              )}
+            </AnimatePresence>
+          </div>
 
-                {/* Wishes List */}
-                <div className="max-w-2xl mx-auto space-y-6">
-                    <AnimatePresence>
-                        <Marquee speed={20}
-                            gradient={false}
-                            className="[--duration:20s] py-2">
-                            {wishes.map((wish, index) => (
-                                <motion.div
-                                    key={wish.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="group relative w-[280px]"
-                                >
-                                    {/* Background gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-rose-100/50 to-pink-100/50 rounded-xl transform transition-transform group-hover:scale-[1.02] duration-300" />
+          {/* Wishes Form - Gửi dữ liệu tới Google Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.1 }}
+            transition={{ delay: 0.5 }}
+            className="max-w-2xl mx-auto mt-12"
+          >
+            <form onSubmit={handleSubmitWish} className="relative">
+              <div
+                className="backdrop-blur-sm p-6 rounded-2xl shadow-lg"
+                style={{
+                  backgroundColor: `${config.ui.landing.colors.cardBackground}D9`,
+                  border: `1px solid ${config.ui.landing.colors.cardBorder}`,
+                }}
+              >
+                <div className="space-y-4">
+                  {/* Name Input */}
+                  <div className="space-y-2">
+                    <div
+                      className="flex items-center space-x-2 text-sm mb-1"
+                      style={{
+                        color: config.ui.landing.colors.textColor,
+                        opacity: 0.7,
+                      }}
+                    >
+                      <User className="w-4 h-4" />
+                      <span>{config.ui.wishes.nameLabel}</span>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={config.ui.wishes.namePlaceholder}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border focus:ring focus:ring-opacity-50 transition-all duration-200 placeholder-gray-400"
+                      style={{
+                        backgroundColor: `${config.ui.landing.colors.cardBackground}AA`,
+                        borderColor: config.ui.landing.colors.cardBorder,
+                        color: config.ui.landing.colors.textColor,
+                        "--tw-ring-color": `${config.ui.landing.colors.highlightColor}80`,
+                      }}
+                      required
+                    />
+                  </div>
 
-                                    {/* Card content */}
-                                    <div className="relative backdrop-blur-sm bg-white/80 p-4 rounded-xl border border-rose-100/50 shadow-md">
-                                        {/* Header */}
-                                        <div className="flex items-start space-x-3 mb-2">
-                                            {/* Avatar */}
-                                            <div className="flex-shrink-0">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-rose-400 to-pink-400 flex items-center justify-center text-white text-sm font-medium">
-                                                    {wish.name[0].toUpperCase()}
-                                                </div>
-                                            </div>
-
-                                            {/* Name, Time, and Attendance */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center space-x-2">
-                                                    <h4 className="font-medium text-gray-800 text-sm truncate">
-                                                        {wish.name}
-                                                    </h4>
-                                                    {getAttendanceIcon(wish.attending)}
-                                                </div>
-                                                <div className="flex items-center space-x-1 text-gray-500 text-xs">
-                                                    <Clock className="w-3 h-3" />
-                                                    <time className="truncate">
-                                                        {formatEventDate(wish.timestamp)}
-                                                    </time>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Message */}
-                                        <p className="text-gray-600 text-sm leading-relaxed mb-2 line-clamp-3">
-                                            {wish.message}
-                                        </p>
-
-                                        {/* Optional: Time indicator for recent messages */}
-                                        {Date.now() - new Date(wish.timestamp).getTime() < 3600000 && (
-                                            <div className="absolute top-2 right-2">
-                                                <span className="px-2 py-1 rounded-full bg-rose-100 text-rose-600 text-xs font-medium">
-                                                    New
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </Marquee>
-                    </AnimatePresence>
-                </div>
-                {/* Wishes Form */}
-                <motion.div
+                  {/* Attendance Dropdown */}
+                  <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="max-w-2xl mx-auto mt-12"
-                >
-                    <form onSubmit={handleSubmitWish} className="relative">
-                        <div className="backdrop-blur-sm bg-white/80 p-6 rounded-2xl border border-rose-100/50 shadow-lg">
-                            <div className='space-y-2'>
-                                {/* Name Input */}
-                                <div className="space-y-2">
-                                    <div className="flex items-center space-x-2 text-gray-500 text-sm mb-1">
-                                        <User className="w-4 h-4" />
-                                        <span>Nama Kamu</span>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Masukan nama kamu..."
-                                        className="w-full px-4 py-2.5 rounded-xl bg-white/50 border border-rose-100 focus:border-rose-300 focus:ring focus:ring-rose-200 focus:ring-opacity-50 transition-all duration-200 text-gray-700 placeholder-gray-400"
-                                        required
-                                    />
-                                </div>
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="space-y-2 relative"
-                                >
-                                    <div className="flex items-center space-x-2 text-gray-500 text-sm mb-1">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>Apakah kamu hadir?</span>
-                                    </div>
+                    transition={{ delay: 0.1 }}
+                    className="space-y-2 relative"
+                  >
+                    <div
+                      className="flex items-center space-x-2 text-sm mb-1"
+                      style={{
+                        color: config.ui.landing.colors.textColor,
+                        opacity: 0.7,
+                      }}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      <span>{config.ui.wishes.attendanceLabel}</span>
+                    </div>
 
-                                    {/* Custom Select Button */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsOpen(!isOpen)}
-                                        className="w-full px-4 py-2.5 rounded-xl bg-white/50 border border-rose-100 focus:border-rose-300 focus:ring focus:ring-rose-200 focus:ring-opacity-50 transition-all duration-200 text-left flex items-center justify-between"
-                                    >
-                                        <span className={attendance ? 'text-gray-700' : 'text-gray-400'}>
-                                            {attendance ?
-                                                options.find(opt => opt.value === attendance)?.label
-                                                : 'Pilih kehadiran...'}
-                                        </span>
-                                        <ChevronDown
-                                            className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''
+                    {/* Custom Select Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="w-full px-4 py-2.5 rounded-xl border focus:ring focus:ring-opacity-50 transition-all duration-200 text-left flex items-center justify-between"
+                      style={{
+                        backgroundColor: `${config.ui.landing.colors.cardBackground}AA`,
+                        borderColor: config.ui.landing.colors.cardBorder,
+                        color: selectedAttendance
+                          ? config.ui.landing.colors.textColor
+                          : config.ui.landing.colors.textColor + "80",
+                        "--tw-ring-color": `${config.ui.landing.colors.highlightColor}80`,
+                      }}
+                    >
+                      <span>
+                        {selectedAttendance
+                          ? options.find(
+                              (opt) => opt.value === selectedAttendance
+                            )?.label
+                          : config.ui.wishes.attendancePlaceholder}
+                      </span>
+                      <ChevronDown
+                        className={`w-5 h-5 transition-transform duration-200 ${
+                          isDropdownOpen ? "transform rotate-180" : ""
+                        }`}
+                        style={{ color: config.ui.landing.colors.iconColor }}
+                      />
+                    </button>
+
+                    {/* Dropdown Options */}
+                    <AnimatePresence>
+                      {isDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute z-10 w-full mt-1 rounded-xl shadow-lg border overflow-hidden"
+                          style={{
+                            backgroundColor:
+                              config.ui.landing.colors.cardBackground,
+                            borderColor: config.ui.landing.colors.cardBorder,
+                          }}
+                        >
+                          {options.map((option) => (
+                            <motion.button
+                              key={option.value}
+                              type="button"
+                              onClick={() => {
+                                setSelectedAttendance(option.value);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`w-full px-4 py-2.5 text-left transition-colors`}
+                              style={{
+                                backgroundColor:
+                                  selectedAttendance === option.value
+                                    ? `${config.ui.landing.colors.highlightColor}10`
+                                    : "transparent",
+                                color:
+                                  selectedAttendance === option.value
+                                    ? config.ui.landing.colors.highlightColor
+                                    : config.ui.landing.colors.textColor,
+                              }}
+                              whileHover={{
+                                backgroundColor: `${config.ui.landing.colors.highlightColor}08`,
+                              }}
+                            >
+                              {option.label}
+                            </motion.button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+
+                  {/* Wish Textarea */}
+                  <div className="space-y-2">
+                    <div
+                      className="flex items-center space-x-2 text-sm mb-1"
+                      style={{
+                        color: config.ui.landing.colors.textColor,
+                        opacity: 0.7,
+                      }}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>{config.ui.wishes.wishLabel}</span>
+                    </div>
+                    <textarea
+                      placeholder={config.ui.wishes.wishPlaceholder}
+                      value={newWish}
+                      onChange={(e) => setNewWish(e.target.value)}
+                      className="w-full h-32 p-4 rounded-xl border focus:ring focus:ring-opacity-50 resize-none transition-all duration-200 placeholder-gray-400"
+                      style={{
+                        backgroundColor: `${config.ui.landing.colors.cardBackground}AA`,
+                        borderColor: config.ui.landing.colors.cardBorder,
+                        color: config.ui.landing.colors.textColor,
+                        "--tw-ring-color": `${config.ui.landing.colors.highlightColor}80`,
+                      }}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center mt-4">
+                  <motion.button
+                    type="submit"
+                    disabled={isSubmitting}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl text-white font-medium transition-all duration-200
+                                                ${
+                                                  isSubmitting
+                                                    ? "bg-gray-300 cursor-not-allowed"
+                                                    : ""
                                                 }`}
-                                        />
-                                    </button>
-
-                                    {/* Dropdown Options */}
-                                    <AnimatePresence>
-                                        {isOpen && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: -10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                className="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-lg border border-rose-100 overflow-hidden"
-                                            >
-                                                {options.map((option) => (
-                                                    <motion.button
-                                                        key={option.value}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setAttendance(option.value);
-                                                            setIsOpen(false);
-                                                        }}
-                                                        whileHover={{ backgroundColor: 'rgb(255, 241, 242)' }}
-                                                        className={`w-full px-4 py-2.5 text-left transition-colors
-                                        ${attendance === option.value
-                                                                ? 'bg-rose-50 text-rose-600'
-                                                                : 'text-gray-700 hover:bg-rose-50'
-                                                            }`}
-                                                    >
-                                                        {option.label}
-                                                    </motion.button>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </motion.div>
-                                {/* Wish Textarea */}
-                                <div className="space-y-2">
-                                    <div className="flex items-center space-x-2 text-gray-500 text-sm mb-1">
-                                        <MessageCircle className="w-4 h-4" />
-                                        <span>Harapan kamu</span>
-                                    </div>
-                                    <textarea
-                                        placeholder="Kirimkan harapan dan doa untuk kedua mempelai..."
-                                        className="w-full h-32 p-4 rounded-xl bg-white/50 border border-rose-100 focus:border-rose-300 focus:ring focus:ring-rose-200 focus:ring-opacity-50 resize-none transition-all duration-200"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between mt-4">
-                                <div className="flex items-center space-x-2 text-gray-500">
-                                    <Smile className="w-5 h-5" />
-                                    <span className="text-sm">Berikan Doa Anda</span>
-                                </div>
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl text-white font-medium transition-all duration-200
-                    ${isSubmitting
-                                            ? 'bg-gray-300 cursor-not-allowed'
-                                            : 'bg-rose-500 hover:bg-rose-600'}`}
-                                >
-                                    <Send className="w-4 h-4" />
-                                    <span>{isSubmitting ? 'Sedang Mengirim...' : 'Kirimkan Doa'}</span>
-                                </motion.button>
-                            </div>
-                        </div>
-                    </form>
-                </motion.div>
-            </div>
-        </section>
-    </>)
+                    style={{
+                      backgroundColor: isSubmitting
+                        ? ""
+                        : config.ui.landing.colors.highlightColor,
+                    }}
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>
+                      {isSubmitting
+                        ? config.ui.wishes.submitting
+                        : config.ui.wishes.submitButton}
+                    </span>
+                  </motion.button>
+                </div>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      </section>
+    </>
+  );
 }

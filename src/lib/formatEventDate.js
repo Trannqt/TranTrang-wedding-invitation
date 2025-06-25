@@ -14,28 +14,28 @@
  * // returns "00:00"
  * formatEventDate("2024-01-01T00:00:00.000Z", "time")
  */
-export const formatEventDate = (isoString, format = 'full') => {
+export const formatEventDate = (isoString, format = 'short') => {
     const date = new Date(isoString);
 
     const formats = {
         full: {
             weekday: 'long',
             year: 'numeric',
-            month: 'long',
+            month: 'numeric',
             day: 'numeric',
-            timeZone: 'Asia/Jakarta'
+            timeZone: 'Asia/Ho_Chi_Minh'
         },
         short: {
             day: 'numeric',
-            month: 'long',
+            month: 'numeric',
             year: 'numeric',
-            timeZone: 'Asia/Jakarta'
+            timeZone: 'Asia/Ho_Chi_Minh'
         },
         time: {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false,
-            timeZone: 'Asia/Jakarta'
+            timeZone: 'Asia/Ho_Chi_Minh'
         }
     };
 
@@ -66,11 +66,11 @@ export const formatEventDate = (isoString, format = 'full') => {
         'Saturday': 'Sabtu'
     };
 
-    let formatted = date.toLocaleDateString('en-US', formats[format]);
+    let formatted = date.toLocaleDateString('vi-VN', formats[format]);
 
     // Handle time format separately
     if (format === 'time') {
-        return date.toLocaleTimeString('en-US', formats[format]);
+        return date.toLocaleTimeString('vi-VN', formats[format]);
     }
 
     // Replace English month and day names with Indonesian ones
@@ -92,4 +92,17 @@ export const formatEventDate = (isoString, format = 'full') => {
     }
 
     return formatted;
+};
+
+export const formatDayOfWeek = (isoDateString) => {
+  const date = new Date(isoDateString);
+  const options = { weekday: 'long' }; // 'long' cho Thứ Hai, 'short' cho T2
+  return date.toLocaleDateString('vi-VN', options);
+};
+
+//kết hợp cả ngày và thứ nếu cần trong các trường hợp khác
+export const formatFullDateWithDay = (isoDateString) => {
+  const date = new Date(isoDateString);
+  const options = { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' };
+  return date.toLocaleDateString('vi-VN', options);
 };
