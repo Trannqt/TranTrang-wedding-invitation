@@ -61,7 +61,7 @@ const config = {
       },
     ],
     audio: {
-      src: "public/audio/BeautifulInWhite.mp3",
+      src: "audio/BeautifulInWhite.mp3",
       title: "BeautifulInWhite.mp3",
       autoplay: true,
       loop: true,
