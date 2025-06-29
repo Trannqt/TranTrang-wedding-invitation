@@ -9,14 +9,14 @@ import { useState, useCallback, useEffect } from 'react';
 // ✨ QUAN TRỌNG: ĐẢM BẢO CÁC ẢNH NÀY ĐÃ ĐƯỢC NÉN VÀ TỐI ƯU KÍCH THƯỚC CHO WEB
 // VÍ DỤ: ĐỔI TỪ .JPG SANG .WEBP NẾU CÓ THỂ, VÀ GIẢM KÍCH THƯỚC FILE
 // Đổi tên file để phản ánh việc đã được tối ưu (.webp) là tốt nhất
-import img1 from '/images/LQP05285.JPG'; // Giữ nguyên tên file, nhưng hãy tối ưu file gốc
-import img2 from '/images/LQP05322.JPG';
-import img3 from '/images/LQP05405.JPG';
-import img4 from '/images/LQP05428.JPG';
-import img5 from '/images/LQP05549.JPG';
-import img6 from '/images/LQP05554.JPG';
-import img7 from '/images/LQP05559.JPG';
-import img8 from '/images/LQP05576.JPG';
+import img1 from '/images/LQP05285.jpg'; // Giữ nguyên tên file, nhưng hãy tối ưu file gốc
+import img2 from '/images/LQP05322.jpg';
+import img3 from '/images/LQP05405.jpg';
+import img4 from '/images/LQP05428.jpg';
+import img5 from '/images/LQP05549.jpg';
+import img6 from '/images/LQP05554.jpg';
+import img7 from '/images/LQP05559.jpg';
+import img8 from '/images/LQP05576.jpg';
 
 const importedImages = [
     img1, img2, img3, img4, img5, img6, img7, img8, 
