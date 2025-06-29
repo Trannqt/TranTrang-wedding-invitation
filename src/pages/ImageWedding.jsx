@@ -6,16 +6,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect } from 'react';
 
 // IMPORT TẤT CẢ CÁC ẢNH TẠI ĐÂY
-import img1 from '/images/LQP04640.jpg';
-import img2 from '/images/LQP04716.jpg';
-import img3 from '/images/LQP04722.jpg';
-import img4 from '/images/LQP04793.jpg';
-import img5 from '/images/LQP04844.jpg';
-import img6 from '/images/LQP05050.jpg';
+// ✨ QUAN TRỌNG: ĐẢM BẢO CÁC ẢNH NÀY ĐÃ ĐƯỢC NÉN VÀ TỐI ƯU KÍCH THƯỚC CHO WEB
+// VÍ DỤ: ĐỔI TỪ .JPG SANG .WEBP NẾU CÓ THỂ, VÀ GIẢM KÍCH THƯỚC FILE
+// Đổi tên file để phản ánh việc đã được tối ưu (.webp) là tốt nhất
+import img1 from '/images/LQP05285.JPG'; // Giữ nguyên tên file, nhưng hãy tối ưu file gốc
+import img2 from '/images/LQP05322.JPG';
+import img3 from '/images/LQP05405.JPG';
+import img4 from '/images/LQP05428.JPG';
+import img5 from '/images/LQP05549.JPG';
+import img6 from '/images/LQP05554.JPG';
+import img7 from '/images/LQP05559.JPG';
+import img8 from '/images/LQP05576.JPG';
 
 const importedImages = [
-    img1, img2, img3, img4, img5, img6
+    img1, img2, img3, img4, img5, img6, img7, img8, 
 ];
+
+// Chỉ hiển thị 4 ảnh đầu tiên trong lưới.
+// Các ảnh còn lại sẽ chỉ được load khi xem ở chế độ full-view.
+const displayImages = importedImages.slice(0, 4);
 
 export default function ImageWedding() {
     const { ui } = config;
@@ -79,6 +88,7 @@ export default function ImageWedding() {
     };
 
     const openFullView = (index) => {
+        // Khi mở full view, chúng ta sẽ xem từ vị trí ảnh đã click trong danh sách gốc (importedImages)
         setSelectedImageIndex(index);
     };
 
@@ -91,12 +101,12 @@ export default function ImageWedding() {
 
         let newIndex = selectedImageIndex + direction;
         if (newIndex < 0) {
-            newIndex = importedImages.length - 1;
+            newIndex = importedImages.length - 1; // Loop back to the end
         } else if (newIndex >= importedImages.length) {
-            newIndex = 0;
+            newIndex = 0; // Loop back to the beginning
         }
         setSelectedImageIndex(newIndex);
-    }, [selectedImageIndex, importedImages.length]);
+    }, [selectedImageIndex, importedImages.length]); // Sử dụng importedImages.length cho navigate
 
     const handleKeyDown = useCallback((e) => {
         if (selectedImageIndex !== null) {
@@ -113,23 +123,27 @@ export default function ImageWedding() {
     useEffect(() => {
         if (selectedImageIndex !== null) {
             window.addEventListener('keydown', handleKeyDown);
+            // Ngăn chặn cuộn trang khi modal mở
+            document.body.style.overflow = 'hidden';
         } else {
             window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'unset';
         }
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'unset';
         };
     }, [selectedImageIndex, handleKeyDown]);
 
+    // Current image for full view will always come from the full importedImages array
     const currentImage = selectedImageIndex !== null ? importedImages[selectedImageIndex] : null;
 
+    // Bố cục cho 4 hình ảnh đầu tiên
     const photoGridClasses = [
-        "md:col-span-2 md:row-span-2 aspect-[3/4]",
-        "md:col-span-1 md:row-span-1 aspect-[4/3]",
-        "md:col-span-1 md:row-span-1 aspect-[4/3]",
-        "md:col-span-1 md:row-span-2 aspect-[3/4]",
-        "md:col-span-2 md:row-span-1 aspect-[4/3]",
-        "md:col-span-1 md:row-span-1 aspect-[4/3]",
+        "md:col-span-1 md:row-span-1 aspect-[2/4]", // Hình 1
+        "md:col-span-1 md:row-span-1 aspect-[2/4]", // Hình 2
+        "md:col-span-1 md:row-span-1 aspect-[2/4]", // Hình 3
+        "md:col-span-1 md:row-span-1 aspect-[2/4]", // Hình 4
     ];
 
     return (
@@ -141,7 +155,7 @@ export default function ImageWedding() {
             <motion.div
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }} // Giữ nguyên cho tiêu đề section (chỉ chạy 1 lần)
+                viewport={{ once: true, amount: 0.1 }}
                 transition={{ staggerChildren: 0.2 }}
                 className="container mx-auto px-4 relative z-10"
             >
@@ -157,34 +171,36 @@ export default function ImageWedding() {
                     </motion.div>
                 </motion.div>
 
-                {/* Photo Grid */}
+                {/* Photo Grid (Chỉ hiển thị 4 ảnh đầu tiên) */}
                 <motion.div
-                    initial="hidden" // ✨ Giữ initial state
-                    whileInView="visible" // ✨ Animation khi vào viewport
-                    viewport={{ once: false, amount: 0.1 }} // ✨ Thay đổi: once: false
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: false, amount: 0.1 }}
                     transition={{ staggerChildren: 0.07, delayChildren: 0.2 }}
-                    className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto grid-flow-dense"
+                    className="grid grid-cols-2 gap-4 max-w-6xl mx-auto" // Thay đổi grid-cols để phù hợp 4 ảnh
                 >
-                    {importedImages.map((src, index) => (
+                    {displayImages.map((src, index) => (
                         <motion.div
                             key={index}
                             variants={photoItemVariants}
-                            className={`relative w-full overflow-hidden rounded-xl shadow-lg group cursor-pointer ${photoGridClasses[index] || "aspect-[4/3]"}`}
+                            // Sử dụng photoGridClasses[index] để đảm bảo bố cục cho 4 ảnh
+                            className={`relative w-full overflow-hidden rounded-xl shadow-lg group cursor-pointer ${photoGridClasses[index]}`}
                             style={{ border: `1px solid ${colors.cardBorder}` }}
                         >
                             <img
                                 src={src.src || src}
                                 alt={`Ảnh cưới ${index + 1}`}
                                 className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                                loading="lazy" // ✨ Thêm lazy loading cho ảnh trong lưới
                             />
                             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity duration-300">
                                 <motion.button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        openFullView(index);
+                                        openFullView(index); // Mở full view với index của ảnh này
                                     }}
                                     className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white bg-highlightColor hover:bg-opacity-80 font-semibold rounded-full px-4 py-2 text-sm flex items-center gap-2"
-                                    style={{ fontFamily: fonts.body }}
+                                    style={{ fontFamily: fonts.body, backgroundColor: colors.highlightColor }}
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
@@ -204,7 +220,7 @@ export default function ImageWedding() {
                             animate="visible"
                             exit="hidden"
                             variants={overlayVariants}
-                            className="fixed inset-0 w-full h-full bg-black z-[9999] flex items-center justify-center full-view-overlay"
+                            className="fixed inset-0 w-full h-full bg-black bg-opacity-90 z-[9999] flex items-center justify-center full-view-overlay"
                             onClick={closeFullView}
                         >
                             <motion.button
@@ -217,15 +233,15 @@ export default function ImageWedding() {
                             </motion.button>
 
                             <motion.img
-                                key={selectedImageIndex}
+                                key={selectedImageIndex} // Key changes to re-trigger animation on image change
                                 variants={fullViewImageVariants}
                                 initial="enter"
                                 animate="center"
                                 exit="exit"
-                                custom={selectedImageIndex}
+                                custom={navigateImage} // Pass direction for custom variant animation
                                 src={currentImage.src || currentImage}
                                 alt={`Ảnh cưới full view ${selectedImageIndex + 1}`}
-                                className="max-w-[85vw] max-h-[85vh] object-contain rounded-lg shadow-lg relative z-[9999]"
+                                className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-lg relative z-[9999]"
                                 onClick={(e) => e.stopPropagation()}
                             />
 

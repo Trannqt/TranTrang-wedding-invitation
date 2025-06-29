@@ -178,7 +178,7 @@ const config = {
         enabled: true,
         count: 100, // Tăng số lượng hạt
         color: "rgba(255, 255, 255, 0.4)", // Tạm thời đổi sang màu vàng kim (Gold) để dễ nhìn
-        size: "10px", // Tăng kích thước hạt
+        size: "20px", // Tăng kích thước hạt
         animationDuration: "4s", // Điều chỉnh thời gian animation
       },
       // Thêm cấu hình cho hiệu ứng trái tim
@@ -186,7 +186,7 @@ const config = {
         enabled: true,
         count: 15, // Số lượng trái tim (ít hơn sparkle để không quá nhiều)
         color: "red", // Màu hồng nhạt (Pink), hoặc có thể dùng colors.highlightColor
-        size: "20px", // Kích thước trái tim
+        size: "40px", // Kích thước trái tim
         animationDuration: "8s", // Thời gian bay lên và mờ dần
         delayOffset: 1, // Độ trễ ban đầu để xuất hiện sau các hiệu ứng khác
       },

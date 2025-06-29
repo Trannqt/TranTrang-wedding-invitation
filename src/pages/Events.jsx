@@ -38,7 +38,7 @@ export default function Events() {
                     className="relative z-10 container mx-auto px-4"
                 >
                     {/* Section Header */}
-                    <div className="text-center space-y-4 mb-16">
+                    <div className="text-center space-y-4 mb-10 mt-4">
                         <motion.span
                             variants={sentenceVariants}
                             className="inline-block font-medium mb-2"

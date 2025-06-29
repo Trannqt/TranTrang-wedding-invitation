@@ -174,7 +174,7 @@ const LandingPage = ({ onOpenInvitation }) => {
                 style={{ color: colors.textColor, fontFamily: fonts.heading }}
               >
                 <p>
-                  {config.data.groomName.split("").map((char, index) => (
+                  {config.data.brideName.split("").map((char, index) => (
                     <motion.span key={index} variants={characterVariants}>
                       {char}
                     </motion.span>
@@ -195,7 +195,7 @@ const LandingPage = ({ onOpenInvitation }) => {
                   &
                 </motion.span>
                 <p>
-                  {config.data.brideName.split("").map((char, index) => (
+                  {config.data.groomName.split("").map((char, index) => (
                     <motion.span key={index} variants={characterVariants}>
                       {char}
                     </motion.span>

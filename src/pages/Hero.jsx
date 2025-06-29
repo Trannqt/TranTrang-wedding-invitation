@@ -113,7 +113,7 @@ export default function Hero() {
     <>
       <section
         id="home"
-        className="min-h-screen flex flex-col items-center justify-center px-4 py-16 sm:py-20 text-center relative overflow-hidden"
+        className="min-h-screen flex flex-col items-center justify-center px-4 py-10 sm:py-20 text-center relative overflow-hidden"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -147,7 +147,30 @@ export default function Hero() {
               transition={{ delay: 0.6 }}
               className="text-3xl sm:text-5xl font-serif bg-clip-text text-transparent bg-gradient-to-r from-rose-600 to-pink-600"
             >
-              <p>{config.data.groomName}</p> & <p>{config.data.brideName}</p>
+              <p>{config.data.brideName}</p>
+
+              <div className="pt-6 relative">
+                <FloatingHearts />
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    rotate: [0, 5, -5, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Heart
+                    className="w-10 sm:w-12 h-10 sm:h-12 text-rose-500 mx-auto"
+                    fill="currentColor"
+                  />
+                </motion.div>
+              </div>
+              
+              <p>{config.data.groomName}</p><br/>
+
             </motion.h2>
           </div>
 
@@ -225,26 +248,6 @@ export default function Hero() {
           </motion.div>
 
           <CountdownTimer targetDate={config.data.date} />
-
-          <div className="pt-6 relative">
-            <FloatingHearts />
-            <motion.div
-              animate={{
-                scale: [1, 1.1, 1],
-                rotate: [0, 5, -5, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              <Heart
-                className="w-10 sm:w-12 h-10 sm:h-12 text-rose-500 mx-auto"
-                fill="currentColor"
-              />
-            </motion.div>
-          </div>
         </motion.div>
       </section>
     </>
