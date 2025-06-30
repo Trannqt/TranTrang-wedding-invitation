@@ -212,8 +212,8 @@ export default function Hero() {
                 className="text-center mb-6"
               >
                 {/* Hardcoded for now to match the image: 15/9 2024 */}
-                <p className="text-6xl font-bold text-gray-800 leading-none">13/7 & 15/7</p>
-                <p className="text-5xl font-bold text-gray-800 mt-2">2025</p>
+                <p className="text-6xl font-bold text-gray-800 leading-none font-playfair">13/7 & 15/7</p>
+                <p className="text-5xl font-bold text-gray-800 mt-2 font-playfair">2025</p>
               </motion.div>
 
               {/* Save the date text */}

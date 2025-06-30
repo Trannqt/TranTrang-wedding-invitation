@@ -22,7 +22,9 @@ export default {
 				serif: [
 					'Playfair Display',
 					'serif'
-				]
+				],
+				dancing: ['"Dancing Script"', 'cursive'],
+				'playfair': ['"Playfair Display"', 'serif'],
 			},
 			colors: {
 				background: 'hsl(var(--background))',

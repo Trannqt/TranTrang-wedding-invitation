@@ -24,11 +24,11 @@ const config = {
       address: "Số 456, Đường C, Quận D, TP.HCM", // Địa chỉ nhà nữ
       title: "Lễ Ăn Hỏi (Nhà Cô Dâu)", // Tiêu đề sự kiện nhà nữ (tùy chọn)
     },
-    maps_url: "https://maps.app.goo.gl/fHVRd96GmbfGgqfN6",
+    maps_url: "https://maps.app.goo.gl/puZv2t8WNPr8kGzX8",
     maps_embed:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.155748929567!2d108.24478189999999!3d12.961883799999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x316e1cb196b6fffd%3A0xb80c5cc83347a162!2zTmjDoCBUaOG7nSBHacOhbyBY4bupIFDGoW5nxJBSYW5n!5e0!3m2!1svi!2s!4v1750878289104!5m2!1svi!2s",
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.89355447059!2d108.2009375!3d12.914562499999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x316e03326ea42363%3A0x818c2664eb78140e!2zVzY3MitSOSwgS3LDtG5nIELDumssIMSQ4bqvayBM4bqvaw!5e0!3m2!1svi!2s!4v1751300092167!5m2!1svi!2s",
     time: "15:00 - 16:30",
-    location: "Nhà Thờ Pơng Drang",
+    location: "Nhà Thờ giáo họ Tân Lập",
     address: "Cư M'gar, Cư Dliê M'nông, ĐắkLắk",
     ogImage: "/images/og-image.jpg",
     favicon: "/images/favicon.ico",
