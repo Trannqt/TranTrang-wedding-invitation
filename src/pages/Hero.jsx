@@ -1,14 +1,23 @@
 /* eslint-disable react/prop-types */
 
 import { Calendar, Clock, Heart } from "lucide-react";
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import config from "@/config/config";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef, useContext } from "react";
+import config from "@/config/config"; // Assuming config.js exists and holds relevant data
 import { formatEventDate } from "@/lib/formatEventDate";
 import { safeBase64 } from "@/lib/base64";
+import { MusicControlContext } from "@/components/Layout"; // Đảm bảo đúng đường dẫn này
+
+// Import the bouquet image directly
+import coupleImage from '/images/LQP05285.jpg'; // This is the change!
 
 export default function Hero() {
   const [guestName, setGuestName] = useState("");
+  const [showVideoIntro, setShowVideoIntro] = useState(true);
+  const iframeRef = useRef(null);
+
+  // Sử dụng context để lấy handleVideoEnded
+  const { handleVideoEnded } = useContext(MusicControlContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,10 +32,27 @@ export default function Hero() {
         setGuestName("");
       }
     }
-  }, []);
+
+    // Nếu không có video ID, bỏ qua phần video intro và hiển thị nội dung chính ngay lập tức
+    if (!config.data.youtubeVideoId) {
+      setShowVideoIntro(false);
+      handleVideoEnded(); // Báo hiệu cho Layout rằng video đã kết thúc
+    }
+  }, [handleVideoEnded]); // Thêm handleVideoEnded vào dependency array
+
+  const handleSkipVideo = () => {
+    setShowVideoIntro(false);
+    // Gọi hàm từ context để báo hiệu video đã kết thúc
+    handleVideoEnded();
+    // Dừng video khi bỏ qua
+    if (iframeRef.current) {
+      iframeRef.current.src = ""; // Xóa src để dừng video
+    }
+  };
 
   const CountdownTimer = ({ targetDate }) => {
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
     function calculateTimeLeft() {
       const difference = +new Date(targetDate) - +new Date();
       let timeLeft = {};
@@ -41,6 +67,7 @@ export default function Hero() {
       }
       return timeLeft;
     }
+
     useEffect(() => {
       const timer = setInterval(() => {
         setTimeLeft(calculateTimeLeft());
@@ -48,19 +75,24 @@ export default function Hero() {
       return () => clearInterval(timer);
     }, [targetDate]);
 
+    // Ensure two digits for display if less than 10
+    const formatTime = (value) => String(value).padStart(2, '0');
+
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
+      <div className="flex justify-center mt-4">
         {Object.keys(timeLeft).map((interval) => (
           <motion.div
             key={interval}
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="flex flex-col items-center p-3 bg-white/80 backdrop-blur-sm rounded-xl border border-rose-100"
+            className="flex flex-col items-center mx-2" // Adjust margin for spacing
           >
-            <span className="text-xl sm:text-2xl font-bold text-rose-600">
-              {timeLeft[interval]}
+            <span className="text-3xl font-bold text-rose-600">
+              {formatTime(timeLeft[interval])}
             </span>
-            <span className="text-xs text-gray-500 capitalize">{interval}</span>
+            <span className="text-xs text-gray-500 capitalize">
+              {interval}
+            </span>
           </motion.div>
         ))}
       </div>
@@ -68,6 +100,9 @@ export default function Hero() {
   };
 
   const FloatingHearts = () => {
+    // Only render FloatingHearts if video is off (or showVideoIntro is false)
+    if (showVideoIntro) return null;
+
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(8)].map((_, i) => (
@@ -94,12 +129,14 @@ export default function Hero() {
             className="absolute"
           >
             <Heart
-              className={`w-${Math.floor(Math.random() * 2) + 8} h-${Math.floor(Math.random() * 2) + 8} ${
+              className={`w-${
+                Math.floor(Math.random() * 2) + 8
+              } h-${Math.floor(Math.random() * 2) + 8} ${
                 i % 3 === 0
                   ? "text-rose-400"
                   : i % 3 === 1
-                    ? "text-pink-400"
-                    : "text-red-400"
+                  ? "text-pink-400"
+                  : "text-red-400"
               }`}
               fill="currentColor"
             />
@@ -111,145 +148,102 @@ export default function Hero() {
 
   return (
     <>
-      <section
-        id="home"
-        className="min-h-screen flex flex-col items-center justify-center px-4 py-10 sm:py-20 text-center relative overflow-hidden"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="space-y-6 relative z-10"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-block mx-auto"
+      <AnimatePresence>
+        {showVideoIntro && config.data.youtubeVideoId ? ( // <--- Kiểm tra youtubeVideoId
+          <motion.section
+            key="video-intro"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50 p-4"
           >
-            <span className="px-4 py-1 text-sm bg-rose-50 text-rose-600 rounded-full border border-rose-200">
-              {config.ui.hero.saveDate}
-            </span>
-          </motion.div>
-
-          <div className="space-y-4">
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-gray-500 font-light italic text-base sm:text-lg"
-            >
-              {config.ui.hero.weddingAnnouncement}
-            </motion.p>
-            <motion.h2
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-3xl sm:text-5xl font-serif bg-clip-text text-transparent bg-gradient-to-r from-rose-600 to-pink-600"
-            >
-              <p>{config.data.brideName}</p>
-
-              <div className="pt-6 relative">
-                <FloatingHearts />
-                <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    rotate: [0, 5, -5, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                >
-                  <Heart
-                    className="w-10 sm:w-12 h-10 sm:h-12 text-rose-500 mx-auto"
-                    fill="currentColor"
-                  />
-                </motion.div>
-              </div>
-              
-              <p>{config.data.groomName}</p><br/>
-
-            </motion.h2>
-          </div>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="relative max-w-md mx-auto"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-rose-50/50 to-white/50 backdrop-blur-md rounded-2xl" />
-
-            <div className="relative px-4 sm:px-8 py-8 sm:py-10 rounded-2xl border border-rose-100/50">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-px">
-                <div className="w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-rose-200 to-transparent" />
-              </div>
-
-              <div className="space-y-6 text-center">
-                <div className="space-y-3">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.9 }}
-                    className="flex items-center justify-center space-x-2"
-                  >
-                    <Calendar className="w-4 h-4 text-rose-400" />
-                    <span className="text-gray-700 font-medium text-sm sm:text-base">
-                      {formatEventDate(config.data.date, "full")}
-                    </span>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1 }}
-                    className="flex items-center justify-center space-x-2"
-                  >
-                    <Clock className="w-4 h-4 text-rose-400" />
-                    <span className="text-gray-700 font-medium text-sm sm:text-base">
-                      {config.data.time}
-                    </span>
-                  </motion.div>
-                </div>
-
-                <div className="flex items-center justify-center gap-3">
-                  <div className="h-px w-8 sm:w-12 bg-rose-200/50" />
-                  <div className="w-2 h-2 rounded-full bg-rose-200" />
-                  <div className="h-px w-8 sm:w-12 bg-rose-200/50" />
-                </div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.1 }}
-                  className="space-y-2"
-                >
-                  <p className="text-gray-500 font-serif italic text-sm">
-                    {config.ui.hero.guestTitle}
-                  </p>
-                  <p className="text-gray-600 font-medium text-sm">
-                    {config.ui.hero.guestPrefix}
-                  </p>
-                  <p className="text-rose-500 font-semibold text-lg">
-                    {guestName ? guestName : config.ui.hero.guestDefault}
-                  </p>
-                </motion.div>
-              </div>
-
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-px">
-                <div className="w-20 sm:w-32 h-[2px] bg-gradient-to-r from-transparent via-rose-200 to-transparent" />
-              </div>
+            <div className="relative w-full max-w-4xl aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
+              <iframe
+                ref={iframeRef}
+                className="absolute top-0 left-0 w-full h-full"
+                // Đường dẫn nhúng YouTube, sử dụng config.data.youtubeVideoId
+                src={`https://www.youtube.com/embed/${config.data.youtubeVideoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Wedding Intro Video"
+              ></iframe>
             </div>
+            <motion.button
+              onClick={handleSkipVideo}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              className="mt-8 px-6 py-3 bg-white text-rose-600 rounded-full shadow-lg hover:bg-rose-50 hover:text-rose-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50"
+            >
+              Bỏ qua Video
+            </motion.button>
+            <p className="mt-4 text-sm text-gray-400">
+              (Video sẽ tự động tắt tiếng, bạn có thể bật tiếng trên trình phát
+              YouTube)
+            </p>
+          </motion.section>
+        ) : (
+          <motion.section
+            key="main-content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            id="home"
+            className="min-h-screen flex flex-col items-center relative overflow-hidden"
+          >
+            {/* Background image of the couple - Adjusted to match the image */}
+            <div
+              className="w-full h-[60vh] bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${coupleImage.src || coupleImage})`, // Assuming coupleImage path in config
+                backgroundPosition: "top center", // Adjust if needed
+              }}
+            ></div>
 
-            <div className="absolute -top-2 -right-2 w-16 sm:w-24 h-16 sm:h-24 bg-rose-100/20 rounded-full blur-xl" />
-            <div className="absolute -bottom-2 -left-2 w-16 sm:w-24 h-16 sm:h-24 bg-rose-100/20 rounded-full blur-xl" />
-          </motion.div>
+            {/* Content area that overlaps the image */}
+            <div className="relative z-10 bg-white rounded-t-3xl shadow-lg -mt-16 w-full max-w-lg mx-auto p-6 sm:p-8 flex flex-col items-center">
+              {/* Date and Year */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="text-center mb-6"
+              >
+                {/* Hardcoded for now to match the image: 15/9 2024 */}
+                <p className="text-6xl font-bold text-gray-800 leading-none">13/7 & 15/7</p>
+                <p className="text-5xl font-bold text-gray-800 mt-2">2025</p>
+              </motion.div>
 
-          <CountdownTimer targetDate={config.data.date} />
-        </motion.div>
-      </section>
+              {/* Save the date text */}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4 }}
+                className="inline-block mx-auto mb-6"
+              >
+                <span className="px-6 py-2 text-md bg-rose-50 text-rose-600 rounded-full border border-rose-200 uppercase font-semibold tracking-wide">
+                  {config.ui.hero.saveDate}
+                </span>
+              </motion.div>
+
+              {/* Countdown Timer */}
+              <CountdownTimer targetDate={config.data.date} />
+
+              {/* Location */}
+              {/* <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 }}
+                className="text-gray-600 text-sm mt-8"
+              >
+                {config.data.location}
+              </motion.div> */}
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
     </>
   );
 }

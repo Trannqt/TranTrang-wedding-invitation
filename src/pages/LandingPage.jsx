@@ -8,7 +8,12 @@ import Sparkle from "@/components/Sparkle";
 import Heart from "@/components/Heart";
 
 const LandingPage = ({ onOpenInvitation }) => {
-  const { colorsHomePage: colors, fonts, sparkleEffect, heartEffect } = config.ui.landing;
+  const {
+    colorsHomePage: colors,
+    fonts,
+    sparkleEffect,
+    heartEffect,
+  } = config.ui.landing;
 
   // Function to create character-by-character animation
   const characterVariants = {
@@ -49,10 +54,7 @@ const LandingPage = ({ onOpenInvitation }) => {
           className="w-5 h-5 flex-shrink-0"
           style={{ color: colors.iconColor }}
         />
-        <p
-          className="font-medium text-sm"
-          style={{ color: colors.textColor }}
-        >
+        <p className="font-medium text-sm" style={{ color: colors.textColor }}>
           {formatEventDate(date)}
         </p>
       </div>
@@ -62,10 +64,7 @@ const LandingPage = ({ onOpenInvitation }) => {
           className="w-5 h-5 flex-shrink-0"
           style={{ color: colors.iconColor }}
         />
-        <p
-          className="font-medium text-sm"
-          style={{ color: colors.textColor }}
-        >
+        <p className="font-medium text-sm" style={{ color: colors.textColor }}>
           {formatDayOfWeek(date)}, {time}
         </p>
       </div>
@@ -170,7 +169,7 @@ const LandingPage = ({ onOpenInvitation }) => {
               className="text-center space-y-2 mb-8"
             >
               <div
-                className="text-3.5xl sm:text-4.5xl md:text-5xl font-serif leading-tight drop-shadow-md"
+                className="text-4xl sm:text-4xl md:text-5xl font-serif leading-tight drop-shadow-md"
                 style={{ color: colors.textColor, fontFamily: fonts.heading }}
               >
                 <p>
@@ -192,7 +191,7 @@ const LandingPage = ({ onOpenInvitation }) => {
                   className="mx-2 sm:mx-3 inline-block"
                   style={{ color: colors.highlightColor }}
                 >
-                  &
+                  ♥
                 </motion.span>
                 <p>
                   {config.data.groomName.split("").map((char, index) => (

@@ -87,29 +87,29 @@ const config = {
       "/images/LQP05050.jpg",
       // Thêm nhiều ảnh khác nếu cần
     ],
+    youtubeVideoId: "OTQ-Tb4EjCA", // <--- THÊM DÒNG NÀY (thay bằng ID video của bạn)
   },
   ui: {
     imageWedding: {
-      // Thêm phần này
       subtitle: "Khoảnh Khắc Đáng Nhớ",
       title: "Bộ Sưu Tập Ảnh Cưới",
       description:
         "Cùng nhìn lại hành trình tình yêu của chúng tôi qua những bức ảnh tuyệt đẹp.",
     },
     hero: {
-      saveDate: "Lưu Ngày Trọng Đại",
-      weddingAnnouncement: "Hành trình yêu của chúng ta bắt đầu...", // Hoặc "Trân trọng kính mời" tùy ý bạn
-      guestTitle: "Kính mời",
-      guestPrefix: "Ông/Bà/Anh/Chị",
+      saveDate: "Save The Date",
+      weddingAnnouncement: "Hành trình yêu của chúng ta bắt đầu...",
+      guestTitle: "", // <--- ĐẶT RỖNG
+      guestPrefix: "", // <--- ĐẶT RỖNG
       guestDefaultName: "Quý khách",
+      coupleImage: "images/LQP04716.jpg", // Path to your couple's image
+      bouquetImage: "images/LQP04716.jpg", // Path to your bouquet image
     },
     events: {
-      // Thêm hoặc cập nhật phần này
-      subtitle: "Lưu Ngày Trọng Đại", // Tiêu đề nhỏ phía trên
-      title: "Lịch Trình Hôn Lễ", // Tiêu đề chính
+      subtitle: "Lưu Ngày Trọng Đại",
+      title: "Lịch Trình Hôn Lễ",
       description:
-        "Chân thành kính mời Quý khách đến tham dự và chung vui cùng chúng tôi!", // Mô tả dưới tiêu đề chính
-      // Tùy chọn để cấu hình màu cho các thẻ sự kiện nếu muốn khác với cardBackground chung
+        "Chân thành kính mời Quý khách đến tham dự và chung vui cùng chúng tôi!",
       cardBackgroundColor: "rgba(255, 255, 255, 0.8)",
       cardBorderColor: "#FFB6C1",
     },
@@ -173,24 +173,21 @@ const config = {
         heading: "'Playfair Display', serif",
         body: "'Open Sans', sans-serif",
       },
-      // Thêm cấu hình cho hiệu ứng lấp lánh
       sparkleEffect: {
         enabled: true,
-        count: 100, // Tăng số lượng hạt
-        color: "rgba(255, 255, 255, 0.4)", // Tạm thời đổi sang màu vàng kim (Gold) để dễ nhìn
-        size: "20px", // Tăng kích thước hạt
-        animationDuration: "4s", // Điều chỉnh thời gian animation
+        count: 100,
+        color: "rgba(255, 255, 255, 0.4)",
+        size: "20px",
+        animationDuration: "4s",
       },
-      // Thêm cấu hình cho hiệu ứng trái tim
       heartEffect: {
         enabled: true,
-        count: 15, // Số lượng trái tim (ít hơn sparkle để không quá nhiều)
-        color: "red", // Màu hồng nhạt (Pink), hoặc có thể dùng colors.highlightColor
-        size: "40px", // Kích thước trái tim
-        animationDuration: "8s", // Thời gian bay lên và mờ dần
-        delayOffset: 1, // Độ trễ ban đầu để xuất hiện sau các hiệu ứng khác
+        count: 15,
+        color: "red",
+        size: "40px",
+        animationDuration: "8s",
+        delayOffset: 1,
       },
-      // Thêm các nhãn cho box sự kiện riêng
       brideEventLabel: "Lễ Vu Quy",
       groomEventLabel: "Lễ Thành Hôn",
     },
