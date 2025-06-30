@@ -12,20 +12,27 @@ import {
   XCircle,
   HelpCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatEventDate } from "@/lib/formatEventDate";
 import config from "@/config/config.js";
 
-// CẤU HÌNH GOOGLE FORM CỦA BẠN
+// CẤU HÌNH GOOGLE FORM VÀ GOOGLE SHEET CỦA BẠN
 // RẤT QUAN TRỌNG: THAY THẾ CÁC GIÁ TRỊ NÀY BẰNG CỦA RIÊNG BẠN!
-// Để an toàn, bạn nên sử dụng biến môi trường (ví dụ: process.env.NEXT_PUBLIC_GOOGLE_FORM_ACTION_URL)
-// Nếu bạn đang dùng Create React App, hãy đặt biến môi trường bắt đầu bằng REACT_APP_
-// Nếu bạn đang dùng Next.js, hãy đặt biến môi trường bắt đầu bằng NEXT_PUBLIC_
 const GOOGLE_FORM_ACTION_URL =
-  "https://docs.google.com/forms/u/0/d/e/1FAIpQLSffjOLiADBSPNExIUTNS-5FAmpKfMlzKKm5SBErWcqhJQEKlw/formResponse"; // Thay YOUR_FORM_ID
+  "https://docs.google.com/forms/u/0/d/e/1FAIpQLSffjOLiADBSPNExIUTNS-5FAmpKfMlzKKm5SBErWcqhJQEKlw/formResponse";
 const ENTRY_ID_NAME = "entry.702848905"; // Thay bằng entry ID của trường "Tên của bạn"
 const ENTRY_ID_MESSAGE = "entry.261536065"; // Thay bằng entry ID của trường "Lời chúc"
 const ENTRY_ID_ATTENDING = "entry.827242592"; // Thay bằng entry ID của trường "Bạn có thể tham dự?"
+
+// --- CẤU HÌNH CHO GOOGLE SHEET (NƠI LƯU PHẢN HỒI FORM) ---
+const GOOGLE_SHEET_ID = "137IxqxZKU3MqEfC-JrTGp3VgYhlXBrjxADdZVugA8F0"; // Thay bằng ID của Google Sheet được liên kết với form
+const GOOGLE_SHEET_GID = "264356337"; // Thay bằng GID của tab (sheet) chứa phản hồi trong Google Sheet
+
+// Xây dựng URL gốc đến Google Sheet Visualization API
+const GOOGLE_SHEET_BASE_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&gid=${GOOGLE_SHEET_GID}`;
+
+// Sử dụng CORS Anywhere proxy để giải quyết vấn đề CORS khi GET dữ liệu
+const GOOGLE_SHEET_FETCH_URL = GOOGLE_SHEET_BASE_URL;
 
 export default function Wishes() {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -34,37 +41,140 @@ export default function Wishes() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedEmoji, setSelectedEmoji] = useState("");
+  const [selectedEmoji, setSelectedEmoji] = useState(""); // State cho emoji, nếu bạn có sử dụng
+
+  // State mới để quản lý dữ liệu lời chúc thực tế từ Google Sheet
+  const [wishes, setWishes] = useState([]);
+  const [isLoadingWishes, setIsLoadingWishes] = useState(true);
+  const [errorLoadingWishes, setErrorLoadingWishes] = useState(null);
 
   const options = config.ui.wishes.attendanceOptions;
 
-  // DỮ LIỆU LỜI CHÚC CỨNG - KHÔNG LOAD TỪ DATABASE, CHỈ DÙNG ĐỂ HIỂN THỊ MẪU
-  const [wishes, setWishes] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      message:
-        "Wishing you both a lifetime of love, laughter, and happiness! 🎉",
-      timestamp: "2024-12-24T23:20:00Z",
-      attending: "attending",
-    },
-    {
-      id: 2,
-      name: "Natalie",
-      message:
-        "Wishing you both a lifetime of love, laughter, and happiness! 🎉",
-      timestamp: "2024-12-24T23:20:00Z",
-      attending: "attending",
-    },
-    {
-      id: 3,
-      name: "Abdur Rofi",
-      message:
-        "Congratulations on your special day! May Allah bless your union! 🤲",
-      timestamp: "2024-12-25T23:08:09Z",
-      attending: "maybe",
-    },
-  ]);
+  // --- Hàm fetchWishes để tải lời chúc từ Google Sheet ---
+  const fetchWishes = async () => {
+    setIsLoadingWishes(true);
+    setErrorLoadingWishes(null);
+    try {
+      const response = await fetch(GOOGLE_SHEET_FETCH_URL);
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error! status: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const text = await response.text();
+      // Google Visualization API trả về JSON được bao bọc trong một hàm callback
+      const jsonString = text.substring(
+        text.indexOf("{"),
+        text.lastIndexOf("}") + 1
+      );
+      const data = JSON.parse(jsonString);
+
+      if (data.status === "error") {
+        throw new Error(
+          data.errors[0]?.detailed_message ||
+            "Lỗi khi tải dữ liệu từ Google Sheet."
+        );
+      }
+
+      if (!data.table || !data.table.rows) {
+        setWishes([]); // Không có dữ liệu hoặc định dạng không đúng
+        return;
+      }
+
+      const rows = data.table.rows;
+      const cols = data.table.cols;
+
+      // Xây dựng map từ nhãn cột sang index để truy cập dễ dàng hơn
+      const headerMap = {};
+      cols.forEach((col, index) => {
+        headerMap[col.label] = index;
+      });
+
+      const parsedWishes = rows
+        .map((row) => {
+          const timestampRaw = row.c[headerMap["Dấu thời gian"]]?.v;
+          const name = row.c[headerMap["Tên của bạn"]]?.v;
+          const attendingRaw = row.c[headerMap["Bạn có thể tham dự?"]]?.v;
+          const message = row.c[headerMap["Lời chúc của bạn"]]?.v;
+
+          // Chuyển đổi timestamp từ chuỗi "Date(yyyy,m,d,h,m,s)" sang Date object
+          let parsedTimestamp = null;
+          if (
+            typeof timestampRaw === "string" &&
+            timestampRaw.startsWith("Date(")
+          ) {
+            // Extract numbers from "Date(yyyy,m,d,h,m,s)"
+            const matches = timestampRaw.match(
+              /Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/
+            );
+            if (matches && matches.length === 7) {
+              // Month is 0-indexed in JS Date, so subtract 1
+              parsedTimestamp = new Date(
+                parseInt(matches[1]), // Year
+                parseInt(matches[2]), // Month (0-indexed)
+                parseInt(matches[3]), // Day
+                parseInt(matches[4]), // Hour
+                parseInt(matches[5]), // Minute
+                parseInt(matches[6]) // Second
+              );
+            }
+          } else if (
+            typeof timestampRaw === "number" ||
+            (typeof timestampRaw === "string" && !isNaN(new Date(timestampRaw)))
+          ) {
+            // Handle raw numbers or ISO strings if they appear
+            parsedTimestamp = new Date(timestampRaw);
+          }
+
+          // Chuẩn hóa trạng thái tham dự
+          let attendingStatus = "";
+          if (attendingRaw) {
+            const lowerCaseAttending = String(attendingRaw).toLowerCase();
+            if (lowerCaseAttending.includes("có")) {
+              attendingStatus = "attending";
+            } else if (lowerCaseAttending.includes("không")) {
+              attendingStatus = "not-attending";
+            } else if (lowerCaseAttending.includes("chưa chắc")) {
+              attendingStatus = "maybe";
+            }
+          }
+
+          return {
+            id: parsedTimestamp
+              ? parsedTimestamp.getTime() + Math.random()
+              : Math.random(), // ID dựa trên timestamp + random
+            timestamp: parsedTimestamp,
+            name: name || "Ẩn danh",
+            message: message || "Không có lời chúc",
+            attending: attendingStatus,
+          };
+        })
+        .filter(
+          (wish) => wish.timestamp instanceof Date && !isNaN(wish.timestamp)
+        ); // Lọc bỏ các mục không có timestamp hợp lệ
+
+      // Sắp xếp lời chúc mới nhất lên đầu
+      parsedWishes.sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      );
+
+      setWishes(parsedWishes);
+    } catch (error) {
+      console.error("Lỗi khi tải lời chúc từ Google Sheet:", error);
+      setErrorLoadingWishes(
+        `Không thể tải lời chúc. Vui lòng kiểm tra quyền truy cập Sheet và cấu hình CORS Proxy. Lỗi: ${error.message}`
+      );
+    } finally {
+      setIsLoadingWishes(false);
+    }
+  };
+
+  // Sử dụng useEffect để fetch lời chúc khi component mount
+  useEffect(() => {
+    fetchWishes();
+  }, []); // [] đảm bảo chỉ chạy một lần khi component được mount
 
   const handleSubmitWish = async (e) => {
     e.preventDefault();
@@ -77,44 +187,27 @@ export default function Wishes() {
     setIsSubmitting(true);
 
     try {
-      // Chuẩn bị dữ liệu để gửi tới Google Form
       const formData = new FormData();
       formData.append(ENTRY_ID_NAME, name.trim());
       formData.append(
         ENTRY_ID_MESSAGE,
         newWish.trim() + (selectedEmoji ? ` ${selectedEmoji}` : "")
       );
-      // Lấy label từ options để gửi đúng giá trị mà Google Form hiển thị cho dropdown/multiple choice
       const attendanceLabel =
         options.find((opt) => opt.value === selectedAttendance)?.label ||
         selectedAttendance;
       formData.append(ENTRY_ID_ATTENDING, attendanceLabel);
-      // Gửi emoji và timestamp nếu bạn có các trường này trong Google Form
 
-      // Gửi dữ liệu tới Google Form
-      const response = await fetch(GOOGLE_FORM_ACTION_URL, {
+      await fetch(GOOGLE_FORM_ACTION_URL, {
         method: "POST",
         body: formData,
-        mode: "no-cors", // Rất quan trọng khi gửi đến Google Form từ frontend
+        mode: "no-cors",
       });
 
-      // Google Form sẽ trả về phản hồi opaque (không truy cập được nội dung) với mode: 'no-cors'
-      // Nên chúng ta chỉ kiểm tra xem fetch có thành công hay không
-      // Nếu không có lỗi, coi như thành công
       console.log(
         "Phản hồi từ Google Form (không truy cập nội dung với no-cors):",
-        response
+        "Dữ liệu đã được gửi thành công (dựa trên việc không có lỗi mạng)."
       );
-
-      // Cập nhật UI cục bộ để hiển thị lời chúc vừa gửi
-      const newWishObj = {
-        id: Date.now(), // Sử dụng timestamp làm ID duy nhất
-        name: name.trim(),
-        message: newWish.trim() + (selectedEmoji ? ` ${selectedEmoji}` : ""),
-        attending: selectedAttendance,
-        timestamp: new Date().toISOString(),
-      };
-      setWishes((prev) => [newWishObj, ...prev]);
 
       // Reset form
       setNewWish("");
@@ -123,10 +216,17 @@ export default function Wishes() {
       setSelectedEmoji("");
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
-      alert("Lời chúc của bạn đã được gửi thành công!"); // Thông báo thành công
+      alert(
+        "Lời chúc của bạn đã được gửi thành công! Có thể mất vài giây để xuất hiện."
+      );
+
+      // Sau khi gửi thành công, đợi một chút để Google Sheet cập nhật, rồi fetch lại
+      setTimeout(() => {
+        fetchWishes();
+      }, 3000); // Đợi 3 giây trước khi fetch lại
     } catch (error) {
       console.error("Lỗi khi gửi lời chúc:", error);
-      alert("Đã xảy ra lỗi khi gửi lời chúc. Vui lòng thử lại."); // Thông báo lỗi
+      alert("Đã xảy ra lỗi khi gửi lời chúc. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -214,10 +314,28 @@ export default function Wishes() {
             </motion.div>
           </motion.div>
 
-          {/* Wishes List (Marquee) - Hiển thị dữ liệu cứng */}
+          {/* Wishes List (Marquee) - Hiển thị dữ liệu từ Google Sheet */}
           <div className="max-w-2xl mx-auto space-y-6">
+            {isLoadingWishes && (
+              <p
+                className="text-center"
+                style={{ color: config.ui.landing.colors.textColor }}
+              >
+                Đang tải lời chúc...
+              </p>
+            )}
+            {errorLoadingWishes && (
+              <p className="text-center text-red-500">{errorLoadingWishes}</p>
+            )}
+            {!isLoadingWishes && !errorLoadingWishes && wishes.length === 0 && (
+              <p
+                className="text-center"
+                style={{ color: config.ui.landing.colors.textColor }}
+              >
+                Chưa có lời chúc nào. Hãy là người đầu tiên gửi nhé!
+              </p>
+            )}
             <AnimatePresence>
-              {/* Chỉ hiển thị marquee nếu có lời chúc */}
               {wishes.length > 0 && (
                 <Marquee
                   speed={20}
@@ -285,7 +403,10 @@ export default function Wishes() {
                             >
                               <Clock className="w-3 h-3" />
                               <time className="truncate">
-                                {formatEventDate(wish.timestamp)}
+                                {/* Đảm bảo wish.timestamp là đối tượng Date hợp lệ */}
+                                {wish.timestamp
+                                  ? formatEventDate(wish.timestamp)
+                                  : "N/A"}
                               </time>
                             </div>
                           </div>
@@ -303,20 +424,21 @@ export default function Wishes() {
                         </p>
 
                         {/* Optional: Time indicator for recent messages */}
-                        {Date.now() - new Date(wish.timestamp).getTime() <
-                          3600000 && (
-                          <div className="absolute top-2 right-2">
-                            <span
-                              className="px-2 py-1 rounded-full text-xs font-medium"
-                              style={{
-                                backgroundColor: `${config.ui.landing.colors.highlightColor}20`,
-                                color: config.ui.landing.colors.highlightColor,
-                              }}
-                            >
-                              New
-                            </span>
-                          </div>
-                        )}
+                        {wish.timestamp &&
+                          Date.now() - wish.timestamp.getTime() < 3600000 && (
+                            <div className="absolute top-2 right-2">
+                              <span
+                                className="px-2 py-1 rounded-full text-xs font-medium"
+                                style={{
+                                  backgroundColor: `${config.ui.landing.colors.highlightColor}20`,
+                                  color:
+                                    config.ui.landing.colors.highlightColor,
+                                }}
+                              >
+                                New
+                              </span>
+                            </div>
+                          )}
                       </div>
                     </motion.div>
                   ))}
@@ -497,11 +619,9 @@ export default function Wishes() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl text-white font-medium transition-all duration-200
-                                                ${
-                                                  isSubmitting
-                                                    ? "bg-gray-300 cursor-not-allowed"
-                                                    : ""
-                                                }`}
+                        ${
+                          isSubmitting ? "bg-gray-300 cursor-not-allowed" : ""
+                        }`}
                     style={{
                       backgroundColor: isSubmitting
                         ? ""
