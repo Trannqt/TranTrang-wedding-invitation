@@ -343,7 +343,7 @@ export default function Wishes() {
                 <Marquee
                   speed={5}
                   gradient={false}
-                  className="[--duration:50s] py-2"
+                  className="[--duration:60s] py-2"
                 >
                   {wishes.map((wish, index) => (
                     <motion.div
