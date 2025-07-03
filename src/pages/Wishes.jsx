@@ -341,10 +341,9 @@ export default function Wishes() {
             <AnimatePresence>
               {wishes.length > 0 && (
                 <Marquee
-                  speed={10}
+                  speed={5}
                   gradient={false}
-                  className="[--duration:40s] py-2"
-                  pauseOnHover={isCardHovered} // Pause marquee on card hover
+                  className="[--duration:50s] py-2"
                 >
                   {wishes.map((wish, index) => (
                     <motion.div
