@@ -423,7 +423,7 @@ export default function Wishes() {
                           style={{
                             color: config.ui.landing.colors.textColor,
                             opacity: 0.9,
-                            height: "3.5rem", // Đặt chiều cao cố định cho phần lời chúc (ví dụ 6rem, bạn có thể điều chỉnh)
+                            height: "5.5rem", // Đặt chiều cao cố định cho phần lời chúc (ví dụ 6rem, bạn có thể điều chỉnh)
                             // Bỏ minHeight nếu bạn đặt height cố định
                           }}
                         >
