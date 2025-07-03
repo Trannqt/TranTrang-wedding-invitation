@@ -25,7 +25,7 @@ const ENTRY_ID_MESSAGE = "entry.261536065"; // Thay bằng entry ID của trư�
 const ENTRY_ID_ATTENDING = "entry.827242592"; // Thay bằng entry ID của trường "Bạn có thể tham dự?"
 
 // --- CẤU HÌNH CHO GOOGLE SHEET (NƠI LƯU PHẢN HỒI FORM) ---
-const GOOGLE_SHEET_ID = "137IxqxZKU3MqEfC-JrTGp3VgYhlXBrjxADdZVugA8F0"; // Thay bằng ID của Google Sheet được liên kết với form
+const GOOGLE_SHEET_ID = "137IxqxZKU3MqEfC-JrTGp3VgYhlXBrjxADdZVugA8F0"; // Đã sửa lại ID chính xác
 const GOOGLE_SHEET_GID = "264356337"; // Thay bằng GID của tab (sheet) chứa phản hồi trong Google Sheet
 
 // Xây dựng URL gốc đến Google Sheet Visualization API
@@ -47,6 +47,9 @@ export default function Wishes() {
   const [wishes, setWishes] = useState([]);
   const [isLoadingWishes, setIsLoadingWishes] = useState(true);
   const [errorLoadingWishes, setErrorLoadingWishes] = useState(null);
+
+  // New state to control marquee pause on hover
+  const [isCardHovered, setIsCardHovered] = useState(false);
 
   const options = config.ui.wishes.attendanceOptions;
 
@@ -338,9 +341,10 @@ export default function Wishes() {
             <AnimatePresence>
               {wishes.length > 0 && (
                 <Marquee
-                  speed={20}
+                  speed={10}
                   gradient={false}
-                  className="[--duration:20s] py-2"
+                  className="[--duration:40s] py-2"
+                  pauseOnHover={isCardHovered} // Pause marquee on card hover
                 >
                   {wishes.map((wish, index) => (
                     <motion.div
@@ -350,6 +354,8 @@ export default function Wishes() {
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ delay: index * 0.05 }}
                       className="group relative w-[280px] flex-shrink-0 mx-2"
+                      onMouseEnter={() => setIsCardHovered(true)} // Set state to true on hover
+                      onMouseLeave={() => setIsCardHovered(false)} // Set state to false when not hovering
                     >
                       {/* Background gradient */}
                       <div
@@ -414,10 +420,12 @@ export default function Wishes() {
 
                         {/* Message */}
                         <p
-                          className="text-sm leading-relaxed mb-2 line-clamp-3"
+                          className="text-sm leading-relaxed mb-2 overflow-y-auto" // Đã bỏ line-clamp-5, thêm overflow-y-auto
                           style={{
                             color: config.ui.landing.colors.textColor,
                             opacity: 0.9,
+                            height: "3.5rem", // Đặt chiều cao cố định cho phần lời chúc (ví dụ 6rem, bạn có thể điều chỉnh)
+                            // Bỏ minHeight nếu bạn đặt height cố định
                           }}
                         >
                           {wish.message}

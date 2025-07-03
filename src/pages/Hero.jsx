@@ -9,7 +9,7 @@ import { safeBase64 } from "@/lib/base64";
 import { MusicControlContext } from "@/components/Layout"; // Đảm bảo đúng đường dẫn này
 
 // Import the bouquet image directly
-import coupleImage from '/images/LQP05285.jpg'; // This is the change!
+import coupleImage from "/images/LQP05285.jpg"; // This is the change!
 
 export default function Hero() {
   const [guestName, setGuestName] = useState("");
@@ -76,7 +76,7 @@ export default function Hero() {
     }, [targetDate]);
 
     // Ensure two digits for display if less than 10
-    const formatTime = (value) => String(value).padStart(2, '0');
+    const formatTime = (value) => String(value).padStart(2, "0");
 
     return (
       <div className="flex justify-center mt-4">
@@ -90,9 +90,7 @@ export default function Hero() {
             <span className="text-3xl font-bold text-rose-600">
               {formatTime(timeLeft[interval])}
             </span>
-            <span className="text-xs text-gray-500 capitalize">
-              {interval}
-            </span>
+            <span className="text-xs text-gray-500 capitalize">{interval}</span>
           </motion.div>
         ))}
       </div>
@@ -135,8 +133,8 @@ export default function Hero() {
                 i % 3 === 0
                   ? "text-rose-400"
                   : i % 3 === 1
-                  ? "text-pink-400"
-                  : "text-red-400"
+                    ? "text-pink-400"
+                    : "text-red-400"
               }`}
               fill="currentColor"
             />
@@ -177,7 +175,7 @@ export default function Hero() {
               transition={{ delay: 1, duration: 0.5 }}
               className="mt-8 px-6 py-3 bg-white text-rose-600 rounded-full shadow-lg hover:bg-rose-50 hover:text-rose-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-opacity-50"
             >
-              Bỏ qua Video
+              Xem ảnh cưới
             </motion.button>
             <p className="mt-4 text-sm text-gray-400">
               (Video sẽ tự động tắt tiếng, bạn có thể bật tiếng trên trình phát
@@ -212,8 +210,12 @@ export default function Hero() {
                 className="text-center mb-6"
               >
                 {/* Hardcoded for now to match the image: 15/9 2024 */}
-                <p className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-800 leading-none">13/7 & 15/7</p>
-                <p className="text-5xl sm:text-5xl md:text-6xl font-bold text-gray-800 mt-2">2025</p>
+                <p className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-800 leading-none">
+                  13/7 & 15/7
+                </p>
+                <p className="text-5xl sm:text-5xl md:text-6xl font-bold text-gray-800 mt-2">
+                  2025
+                </p>
               </motion.div>
 
               {/* Save the date text */}

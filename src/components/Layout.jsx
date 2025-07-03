@@ -171,37 +171,18 @@ const Layout = ({ children }) => {
 
   return (
     <MusicControlContext.Provider value={{ handleVideoEnded, videoEnded }}>
+      {/* Khung nền toàn màn hình của layout */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center"
+        className="min-h-screen relative flex flex-col items-center justify-center" // Đã bỏ `overflow-hidden` ở đây, nếu các hiệu ứng vượt ra ngoài khung điện thoại
         style={{
           background: colors.backgroundLayoutGradient,
           fontFamily: fonts.body,
         }}
       >
-        {/* Sparkle Effect */}
-        {sparkleEffect.enabled && (
-          <Sparkle
-            count={sparkleEffect.count}
-            color={sparkleEffect.color}
-            size={sparkleEffect.size}
-            animationDuration={sparkleEffect.animationDuration}
-          />
-        )}
-
-        {/* Heart Effect */}
-        {heartEffect.enabled && (
-          <Heart
-            count={heartEffect.count}
-            color={heartEffect.color}
-            size={heartEffect.size}
-            animationDuration={heartEffect.animationDuration}
-            delayOffset={heartEffect.delayOffset}
-          />
-        )}
-
+        {/* Nền hình ảnh hero được định vị tuyệt đối */}
         {config.data.heroImage && (
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -213,6 +194,35 @@ const Layout = ({ children }) => {
             <div className="absolute inset-0 bg-black opacity-10" />
           </div>
         )}
+
+        {/* Container cho hiệu ứng Sparkle và Heart - được định vị cố định (fixed) và z-index cao */}
+        {/* QUAN TRỌNG: Đảm bảo các component Sparkle và Heart tự xử lý vị trí toàn màn hình của chúng */}
+        {/* Đặt z-index cao hơn các phần tử khác để đảm bảo chúng luôn nằm trên cùng */}
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{ zIndex: 1000 }}
+        >
+          {sparkleEffect.enabled && (
+            <Sparkle
+              count={sparkleEffect.count}
+              color={sparkleEffect.color}
+              size={sparkleEffect.size}
+              animationDuration={sparkleEffect.animationDuration}
+            />
+          )}
+
+          {heartEffect.enabled && (
+            <Heart
+              count={heartEffect.count}
+              color={heartEffect.color}
+              size={heartEffect.size}
+              animationDuration={heartEffect.animationDuration}
+              delayOffset={heartEffect.delayOffset}
+            />
+          )}
+        </div>
+
+        {/* Div này là khung điện thoại của bạn */}
         <div className="relative min-h-screen w-full from-gray-50 to-gray-100 flex items-center justify-center">
           <motion.div
             className="mx-auto w-full max-w-[430px] min-h-screen bg-white relative overflow-hidden border border-gray-200 shadow-lg"
@@ -220,7 +230,7 @@ const Layout = ({ children }) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Music Control Button with Status Indicator */}
+            {/* Nút điều khiển nhạc với chỉ báo trạng thái */}
             {videoEnded && ( // <--- CHỈ HIỂN THỊ NÚT KHI VIDEO ĐÃ KẾT THÚC
               <motion.button
                 initial={{ scale: 0 }}
@@ -245,7 +255,7 @@ const Layout = ({ children }) => {
               {children}
             </main>
             <BottomBar />
-            {/* Music Info Toast */}
+            {/* Toast thông tin nhạc */}
             <AnimatePresence>
               {showToast && (
                 <motion.div
