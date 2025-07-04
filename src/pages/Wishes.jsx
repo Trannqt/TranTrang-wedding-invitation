@@ -344,6 +344,7 @@ export default function Wishes() {
                   speed={5}
                   gradient={false}
                   className="[--duration:60s] py-2"
+                  pauseOnHover={isCardHovered} // Pause marquee on card hover
                 >
                   {wishes.map((wish, index) => (
                     <motion.div
@@ -427,7 +428,7 @@ export default function Wishes() {
                             // Bỏ minHeight nếu bạn đặt height cố định
                           }}
                         >
-                          {wish.message}
+                          <span>{wish.message}</span>
                         </p>
 
                         {/* Optional: Time indicator for recent messages */}
